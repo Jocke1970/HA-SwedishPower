@@ -2,7 +2,7 @@
 
 A developing **Sweden-first Home Assistant integration and planned Lovelace card** for exploring the Swedish electricity system.
 
-> **Project status: first supervised beta candidate `2026.11.0b1`.** Backend tests pass, but the release is not yet field-tested in the user's Home Assistant. The Lovelace card is planned. **Install only a published beta release, never `dev`.**
+> **Project status:** `2026.11.0b1` is in HA field testing, and `2026.11.0b2` is the six-reactor data-collection beta candidate. **Install only a published beta release, never `dev`.** Stable `main` and the Lovelace card are pending.
 
 ## Vision
 
@@ -18,15 +18,15 @@ A Sweden-focused control room with:
 
 ## Sources under evaluation
 
-**Statnett Driftsdata** direct endpoints for Sweden's country-level production/consumption and raw area flows returned HTTP 200/JSON in GitHub Actions. The new backend parser also passed a live contract check. Flow direction, access/reuse terms and deployment behavior still need verification. Vattenfall, OKG and UMM are planned sources for individual reactors.
+**Statnett Driftsdata** direct endpoints for Sweden's country-level production/consumption and raw area flows returned HTTP 200/JSON in GitHub Actions. The new backend parser also passed a live contract check. Flow direction, access/reuse terms and deployment behavior still need verification. Vattenfall and OKG operator output is verified and implemented in the b2 candidate; UMM notice interpretation remains research-only.
 
 See [Data sources and verification](docs/DATA_SOURCES.md).
 
-## Beta 2026.11.0b1 installation (manual until main is installable)
+## Beta installation and upgrades (manual until main is installable)
 
 **Known Home Assistant 2026.11 Marketplace limitation:** `Add from link` checks the repository's default branch (`main`) before adding a custom integration. We intentionally keep the unfield-tested beta code off `main`, so Marketplace currently reports **"missing content ... in version main"**. The beta release itself exists and has passed automated tests. We will not move an untested release into `main` just to bypass discovery.
 
-For supervised testing, download **Source code (zip)** from the [published 2026.11.0b1 prerelease](https://github.com/Jocke1970/HA-SwedishPower/releases/tag/2026.11.0b1). Extract it and copy **only** the entire `custom_components/swedish_power` directory into Home Assistant's configuration folder, resulting in `/config/custom_components/swedish_power/manifest.json` and the other Python and translation files. Restart HA, then add **Swedish Power** from **Settings → Devices & services**.
+Install from the **published** Git beta release, not a branch head. For the existing b1 integration, upgrade in place using the [2026.11.0b2 published tag](https://github.com/Jocke1970/HA-SwedishPower/releases/tag/2026.11.0b2) when available: back up and replace **only** `/config/custom_components/swedish_power/`, then restart HA. **Keep the configured Swedish Power entry**: b2 preserves eight Statnett entity IDs and adds six reactor MW sensors, for **14 total**. See [b2 test plan](docs/BETA_TEST_PLAN_2026.11.0b2.md).
 
 **Manual installation is not managed by Marketplace**, so future beta updates also need manual file replacement and a restart. Never install code directly from the `dev` branch. See the [complete beta test plan](docs/BETA_TEST_PLAN.md) and [beta field-test issue](https://github.com/Jocke1970/HA-SwedishPower/issues/6).
 
@@ -38,9 +38,9 @@ For supervised testing, download **Source code (zip)** from the [published 2026.
 - [Proposed architecture and safety rules](docs/ARCHITECTURE.md)
 - [Data-source validation register](docs/DATA_SOURCES.md)
 
-## Nuclear source research (dev only)
+## Reactor data and source research
 
-Vattenfall F1–F3 / R3–R4 and OKG O3 output were verified directly from official sites. A limited public Nord Pool UMM response was successfully normalized for all six Swedish reactors. Pure Python data adapters and **41 passing offline tests** now exist on `dev`, but the reactor entities are **not yet part of the released integration**. See [source schema and caveats](docs/NUCLEAR_DATA_DISCOVERY.md). The running `2026.11.0b1` beta still contains only the eight original Statnett sensors.
+Vattenfall F1–F3 / R3–R4 and OKG O3 output were verified directly from official sites. A limited public Nord Pool UMM response was successfully normalized for all six Swedish reactors. The b2 candidate on `dev` adds six reactor output sensors, with quality and source-time attributes. UMM remains a research-only parser and **is not used to infer operational status**. See [source schema and caveats](docs/NUCLEAR_DATA_DISCOVERY.md). The installed b1 remains unchanged until upgraded by the user.
 
 ## Development approach
 
@@ -48,7 +48,7 @@ Vattenfall F1–F3 / R3–R4 and OKG O3 output were verified directly from offic
 2. `beta` — supervised Home Assistant testing;
 3. `main` — validated stable releases and documentation.
 
-The initial backend includes eight country-level MW sensors and 15-minute polling. Direct Statnett JSON parsing, offline unit tests and real HA 2026.11 lifecycle tests with mocked HTTP are green. Supervised beta field testing and source policy checks remain before stable release.
+The b1 backend has eight national MW sensors. The b2 candidate adds six independently refreshed 15-minute reactor MW sensors. Direct Statnett JSON parsing, offline unit tests and real HA 2026.11 lifecycle tests with mocked HTTP are green. Supervised beta field testing and source policy checks remain before stable release.
 
 ## Development verification
 
@@ -57,7 +57,7 @@ The initial backend includes eight country-level MW sensors and 15-minute pollin
 - [Marketplace/HACS validation and hassfest — passed (repo About metadata tracked in Issue #5)](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43618520445)
 - [Backend live Statnett parser check — passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43609117170)
 
-The flow endpoint's raw records are available only for diagnostics until direction/sign semantics are verified. No standalone reactor entities or custom Lovelace card have been implemented yet.
+The flow endpoint's raw records are available only for diagnostics until direction/sign semantics are verified. Reactor output sensors are implemented in the b2 candidate; no confirmed outage/status entities or Lovelace card exist.
 
 ## Scope boundaries
 
