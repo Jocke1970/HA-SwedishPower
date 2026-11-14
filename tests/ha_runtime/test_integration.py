@@ -182,7 +182,7 @@ async def test_optional_flow_failure_keeps_national_sensors(hass, mocked_statnet
     assert coordinator.last_update_success is True
     assert coordinator.data.flow_error == "TimeoutError"
     assert len(coordinator.data.raw_flows) == 0
-    assert _sensor_states(hass, entry)["swedish_power_se_production"].state == "20323"
+    assert float(_sensor_states(hass, entry)["swedish_power_se_production"].state) == 20323
 
 
 async def test_source_staleness_marks_mw_unavailable(hass, mocked_statnett):
