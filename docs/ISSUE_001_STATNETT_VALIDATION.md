@@ -68,4 +68,17 @@ The offline example fixtures originate from a prior **third-party** display and 
 - [ ] Confirm reuse/attribution terms before publishing a reusable integration.
 - [ ] Preserve raw-source timestamp semantics and validated format in parser fixtures and HA mapping.
 
+## Second independent execution — full parser passed
+
+At **2026-11-14 14:34 UTC**, [GitHub Actions run #2](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43605579911) again returned HTTP 200/JSON for both endpoints, ran **six offline unit tests successfully**, and executed `python tools/statnett_probe.py` against both direct endpoints. It normalized all Swedish production categories above correctly with:
+
+- Source snapshot `MeasuredAt = 2026-11-14T13:45:00+00:00`.
+- National production and net-exchange row timestamps `null` (recorded as `unknown_timestamp` instead of pretending they are individual observations).
+- Consumption and production-by-type row times `2026-11-14T13:30:00+00:00`.
+- Accounting residuals both **0 MW** in that response.
+- **14 Sweden-related physical-flow rows**, including **3 internal SE1–SE4** and **11 cross-border**.
+- Raw flow sign/direction deliberately kept `UNVERIFIED`.
+
+This confirms that the **current probe parser is compatible with the direct source's observed schema**, not merely with illustrative third-party fixtures. It does not prove indefinite availability, permissive usage terms, or exact semantic interpretation.
+
 **Decision:** Direct JSON access is verified and suitable for the next engineering checks. **Issue #1 stays open** until flow semantics and source policy are established; no stable HA release yet.
