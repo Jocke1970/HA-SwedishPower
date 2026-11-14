@@ -100,3 +100,30 @@ jobs:
           print("\nDirect JSON verification result:", "PASS" if not errors else f"INCOMPLETE ({errors} failed checks)")
           raise SystemExit(1 if errors else 0)
           PY
+      - name: Check parser against actual Statnett responses
+        uses: actions/checkout@v4
+
+      - name: Run offline parser unit tests
+        shell: bash
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate live production and Swedish flow parsing
+        shell: bash
+        run: |
+          python tools/statnett_probe.py > /tmp/swedish-power-probe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          obj = json.loads(Path("/tmp/swedish-power-probe.json").read_text())
+          prod = obj["production"]
+          print("Country:", prod["scope"])
+          print("Snapshot time:", prod["snapshot_reported_at"])
+          print("Swedish production fields:")
+          for k, rec in prod["values"].items():
+              print(f"  {k}: {rec['value_mw']} MW; quality={rec['quality']}; measured_at={rec['measured_at']}")
+          print("Accounting checks:", prod["checks"])
+          print("Swedish flows:", len(obj["flows"]["flows"]))
+          print("Internal SE1–SE4 flows:", sum(f["area_type"] == "internal" for f in obj["flows"]["flows"]))
+          print("Cross-border Swedish flows:", sum(f["area_type"] == "cross_border" for f in obj["flows"]["flows"]))
+          print("Direction:", obj["flows"]["sign_convention"])
+          PY
