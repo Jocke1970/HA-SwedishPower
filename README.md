@@ -2,7 +2,7 @@
 
 A developing **Sweden-first Home Assistant integration and planned Lovelace card** for exploring the Swedish electricity system.
 
-> **Project status: backend MVP implemented in `dev`, validated in an automated Home Assistant 2026.11 test runtime (10/10 tests passed); not yet beta-released or field-tested on the user's HA.** The Lovelace card is still planned. Do not install `dev` as a production integration.
+> **Project status: first supervised beta candidate `2026.11.0b1`.** Backend tests pass, but the release is not yet field-tested in the user's Home Assistant. The Lovelace card is planned. **Install only a published beta release, never `dev`.**
 
 ## Vision
 
@@ -21,6 +21,14 @@ A Sweden-focused control room with:
 **Statnett Driftsdata** direct endpoints for Sweden's country-level production/consumption and raw area flows returned HTTP 200/JSON in GitHub Actions. The new backend parser also passed a live contract check. Flow direction, access/reuse terms and deployment behavior still need verification. Vattenfall, OKG and UMM are planned sources for individual reactors.
 
 See [Data sources and verification](docs/DATA_SOURCES.md).
+
+## Beta installation (Home Assistant 2026.11+)
+
+For the published `2026.11.0b1` prerelease (check [Releases](https://github.com/Jocke1970/HA-SwedishPower/releases)), use the built-in **Marketplace** at **Settings → Marketplace → Add from link**, and enter this repository URL. On the repository's Marketplace device under **Settings → Devices & services → Marketplace**, enable its normally disabled **Pre-release** entity and switch it on; then select the beta release. Restart Home Assistant, then add **Swedish Power** under **Settings → Devices & services**.
+
+Read the [supervised beta checklist](docs/BETA_TEST_PLAN.md) first. If the version cannot be selected, do **not** install `dev` or `main` as a replacement. Report the problem or use the published beta source only after verifying its tag. Releasing the prerelease does not constitute a stable release.
+
+**Not included in b1:** SE1–SE4 directional sensors, reactor-by-reactor details, and the Lovelace card.
 
 ## Project documentation
 
@@ -42,6 +50,7 @@ The initial backend includes eight country-level MW sensors and 15-minute pollin
 
 - [Backend offline checks — 15 tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43617129635)
 - [Home Assistant 2026.11 — 10 integration tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43617129627)
+- [Marketplace/HACS validation and hassfest — passed (repo About metadata tracked in Issue #5)](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43618520445)
 - [Backend live Statnett parser check — passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43609117170)
 
 The flow endpoint's raw records are available only for diagnostics until direction/sign semantics are verified. No standalone reactor entities or custom Lovelace card have been implemented yet.
