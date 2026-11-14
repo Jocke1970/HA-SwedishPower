@@ -106,6 +106,25 @@ def probe_okg():
                 break
 
 
+def probe_okg_javascript():
+    url = "https://okg.se/main.js"
+    status, ct, js = fetch(url, "application/javascript")
+    print(f"OKG JS: HTTP {status}, type={ct}, chars={len(js)}")
+    if status != 200:
+        return
+    print("  fetched content cap: 1.5 MB")
+    for term in (
+        "production-meter", "productionMeter", "ProductionMeter",
+        "functionsBaseUrl", "functionsbaseurl", "/api/", "productionData",
+        "production", "Production", "Oskarshamn", "getO3", "FetchProduction",
+    ):
+        matches = list(re.finditer(re.escape(term), js, re.IGNORECASE))
+        print(f"  JS term {term}: {len(matches)} hits")
+        for m in matches[:3]:
+            excerpt = re.sub(r"\\s+", " ", js[max(0,m.start()-160):m.end()+240])
+            print("    JS context:", excerpt[:420])
+
+
 def probe_umm():
     base = "https://ummapi.nordpoolgroup.com/messages"
     query = urlencode({"messageTypes": 1, "fuelTypes": 14, "limit": 2, "skip": 0})
@@ -144,6 +163,8 @@ if __name__ == "__main__":
     passed = probe_vattenfall()
     print("=== OKG discovery (read-only) ===")
     probe_okg()
+    print("=== OKG production-meter JavaScript ===")
+    probe_okg_javascript()
     print("=== Nord Pool UMM discovery (read-only) ===")
     probe_umm()
     print("VERIFIED VATTENFALL CONTRACT:", "PASS" if passed else "FAIL")
