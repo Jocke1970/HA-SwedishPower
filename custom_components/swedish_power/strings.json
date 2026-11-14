@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Swedish Power",
+        "description": "Add Sweden's electricity production and consumption from Statnett. Data is requested every 15 minutes."
+      }
+    },
+    "abort": {
+      "already_configured": "Sweden is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "production": {
+        "name": "Total production"
+      },
+      "consumption": {
+        "name": "Total consumption"
+      },
+      "net_exchange": {
+        "name": "Net exchange (raw sign)"
+      },
+      "hydro": {
+        "name": "Hydropower"
+      },
+      "wind": {
+        "name": "Wind power"
+      },
+      "nuclear": {
+        "name": "Nuclear power"
+      },
+      "thermal": {
+        "name": "Thermal power"
+      },
+      "other": {
+        "name": "Other generation"
+      }
+    }
+  }
+}
