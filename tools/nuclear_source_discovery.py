@@ -146,6 +146,31 @@ def probe_okg_output():
         print("  root type:", type(payload).__name__)
 
 
+def probe_umm_parser():
+    from swedish_power.umm import parse_umm_nuclear_sweden
+    query = urlencode({"messageTypes": 1, "fuelTypes": 14, "limit": 100, "skip": 0})
+    status, ct, body = fetch(
+        f"https://ummapi.nordpoolgroup.com/messages?{query}", "application/json"
+    )
+    print(f"UMM normalized probe: HTTP {status}, Content-Type={ct}, response chars={len(body)}")
+    if status != 200:
+        print("  Could not validate the live parser.")
+        return
+    try:
+        data = json.loads(body)
+        records = parse_umm_nuclear_sweden(data)
+    except (ValueError, TypeError) as exc:
+        print("  Parser error:", type(exc).__name__, str(exc)[:180])
+        return
+    print("  page size:", len(data.get("items", [])))
+    print("  recognized Swedish periods in first page:", len(records))
+    print("  reactor IDs:", sorted({r.reactor_id for r in records}))
+    print("  schedule labels:", sorted({r.period_position for r in records}))
+    for rec in records[:5]:
+        print("  notice:", rec.reactor_id, "id:", rec.message_id,
+              "period:", rec.period_position, "capacity MW:", rec.unavailable_capacity_mw)
+
+
 def probe_umm():
     base = "https://ummapi.nordpoolgroup.com/messages"
     query = urlencode({"messageTypes": 1, "fuelTypes": 14, "limit": 2, "skip": 0})
@@ -190,5 +215,7 @@ if __name__ == "__main__":
     probe_okg_output()
     print("=== Nord Pool UMM discovery (read-only) ===")
     probe_umm()
+    print("=== UMM normalized Swedish-unit parser (first 100 only) ===")
+    probe_umm_parser()
     print("VERIFIED VATTENFALL CONTRACT:", "PASS" if passed else "FAIL")
     raise SystemExit(0 if passed else 1)
