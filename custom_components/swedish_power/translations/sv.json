@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Swedish Power",
+        "description": "Lägg till Sveriges elproduktion och förbrukning från Statnett. Uppgifter hämtas var 15:e minut."
+      }
+    },
+    "abort": {
+      "already_configured": "Sverige är redan konfigurerat."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "production": {
+        "name": "Total elproduktion"
+      },
+      "consumption": {
+        "name": "Total elförbrukning"
+      },
+      "net_exchange": {
+        "name": "Nettoutbyte (råtecken)"
+      },
+      "hydro": {
+        "name": "Vattenkraft"
+      },
+      "wind": {
+        "name": "Vindkraft"
+      },
+      "nuclear": {
+        "name": "Kärnkraft"
+      },
+      "thermal": {
+        "name": "Värmekraft"
+      },
+      "other": {
+        "name": "Övrig produktion"
+      }
+    }
+  }
+}
