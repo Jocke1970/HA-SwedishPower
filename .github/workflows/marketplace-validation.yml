@@ -23,7 +23,9 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
-          ignore: brands
+          # Temporary for private beta validation: GitHub repo About metadata not yet set.
+          # Remove 'description topics' after repository About is completed.
+          ignore: brands description topics
 
   hassfest:
     name: Home Assistant hassfest
