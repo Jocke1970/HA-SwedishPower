@@ -1,8 +1,8 @@
 # Roadmap — HA-SwedishPower
 
-> Status: **Planning / discovery** · Scope: **Sweden first** · Last reviewed: **2026-11-14**
+> Status: **Backend MVP implemented on dev; HA runtime validation pending** · Scope: **Sweden first** · Last reviewed: **2026-11-14**
 
-This roadmap describes intended work, **not features that are already implemented**. No production-ready integration or Lovelace card exists yet.
+Checked milestones below identify features implemented in `dev`. There is **no production-ready release or Lovelace card yet**.
 
 ## Guiding decisions
 
@@ -13,10 +13,12 @@ This roadmap describes intended work, **not features that are already implemente
 - **Data integrity:** unknown/unavailable is not 0 MW. Every measurement should have source and measurement timestamp; flag stale or estimated data. Do not confuse unused capacity with a verified outage.
 - **Release policy:** develop on `dev`, validate on `beta`, and publish tested releases to `main`. No requirement to install `dev`.
 
-## Phase 0 — Data-source discovery and contract (P0, next)
+## Phase 0 — Data-source discovery and contract (P0, in progress)
 
-- [ ] Test Statnett's current documented endpoints from a Home Assistant-compatible client; record HTTP behavior, schema, units, timestamps, geographic coverage and rate limits.
-- [ ] Confirm Swedish national production by type, total consumption and net exchange. Distinguish actual, scheduled, estimated and stale values.
+- [x] Confirm direct Statnett API endpoints respond HTTP 200/JSON, with Sweden rows and timestamps (GitHub Actions).
+- [ ] Document permitted use/rate limits and verify source semantics across periods.
+- [x] Confirm Swedish national production types, consumption and net exchange fields via direct JSON.
+- [ ] Verify actual versus scheduled versus estimated values with primary-source documentation.
 - [ ] Verify which flow pairs exist for **SE1–SE4**, including direction/sign convention and publication delays.
 - [ ] Inspect Vattenfall, OKG and UMM sources for **F1, F2, F3, R3, R4, O3**; confirm permitted, reliable machine access and gross/net reference capacities.
 - [ ] Record source attribution, reuse terms and sensible failure/backoff strategy.
@@ -24,13 +26,16 @@ This roadmap describes intended work, **not features that are already implemente
 
 **Exit criteria:** at least one verified, reproducible Swedish production/consumption data fetch, a documented schema, and an explicit list of unresolved fields. Do not start a production scraper on assumptions.
 
-## Phase 1 — Home Assistant backend MVP (P1)
+## Phase 1 — Home Assistant backend MVP (P1, implemented on dev; HA validation pending)
 
-- [ ] Create `custom_components/swedish_power/` with config flow, `DataUpdateCoordinator`, diagnostics and sensor entities.
-- [ ] Read the verified Statnett source(s) with default **900-second** refresh, timeouts, backoff, and an optional rate-limited manual refresh.
-- [ ] Expose Swedish total production, production types actually supported, total consumption and net exchange with **MW** units.
-- [ ] Preserve source measurement timestamps; handle missing/stale data, partial results, clock skew and API failures safely.
-- [ ] Add tests for payload parsing, timezone conversion, source disagreement, stale data and failed polling.
+- [x] Create `custom_components/swedish_power/` with UI config flow, `DataUpdateCoordinator`, diagnostics and eight sensor entities.
+- [x] Implement source reads with default **900-second** refresh, 15-second timeouts and coordinator-managed retries.
+- [ ] Decide whether a rate-limited manual refresh is desirable; not exposed by this first implementation.
+- [x] Map eight country-level source fields to MW sensor descriptions; live parser verified.
+- [x] Preserve row/snapshot timestamps, handle missing/stale/future values and optional flow failure in code.
+- [ ] Test Home Assistant runtime setup, reload, error behavior, and Recorder statistics end to end.
+- [x] Add nine backend data-model tests (15 total repository tests passed) and a live JSON contract check.
+- [ ] Add coordinator network-failure tests and full HA runtime integration tests.
 
 **Exit criteria:** supervised beta testing of functioning entities in HA; no fabricated values, and no false 0 MW on fetch failure.
 
@@ -85,4 +90,4 @@ This roadmap describes intended work, **not features that are already implemente
 4. What is the permitted and preferred access path for reactor MW and UMM records?
 5. Should the Lovelace card remain in this repository under a separate directory or eventually move to its own repository?
 
-See [ARCHITECTURE.md](docs/ARCHITECTURE.md) and [DATA_SOURCES.md](docs/DATA_SOURCES.md) for the proposed technical design and validation checklist.
+See [BACKEND_MVP.md](docs/BACKEND_MVP.md), [ARCHITECTURE.md](docs/ARCHITECTURE.md) and [DATA_SOURCES.md](docs/DATA_SOURCES.md) for the proposed technical design and validation checklist.
