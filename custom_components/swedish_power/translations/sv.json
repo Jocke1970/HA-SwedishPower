@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Swedish Power",
-        "description": "Lägg till Sveriges elproduktion och förbrukning från Statnett. Uppgifter hämtas var 15:e minut."
+        "description": "Lägg till Sveriges elproduktion och förbrukning samt reaktoreffekt från officiella källor. Uppgifter hämtas var 15:e minut."
       }
     },
     "abort": {
@@ -35,6 +35,24 @@
       },
       "other": {
         "name": "Övrig produktion"
+      },
+      "reactor_f1": {
+        "name": "Forsmark 1"
+      },
+      "reactor_f2": {
+        "name": "Forsmark 2"
+      },
+      "reactor_f3": {
+        "name": "Forsmark 3"
+      },
+      "reactor_r3": {
+        "name": "Ringhals 3"
+      },
+      "reactor_r4": {
+        "name": "Ringhals 4"
+      },
+      "reactor_o3": {
+        "name": "Oskarshamn 3"
       }
     }
   }
