@@ -184,7 +184,9 @@ class SwedishReactorPowerSensor(CoordinatorEntity[ReactorSourceCoordinator], Sen
             "source_url": snapshot.source_url if isinstance(snapshot, VattenfallSnapshot) else OKG_URL,
             "source_measured_at": reading.measured_at.isoformat() if reading.measured_at else None,
             "fetched_at": snapshot.fetched_at.isoformat(),
-            "quality": reading.quality,
+            "quality": reading.quality if self.coordinator.last_update_success else "source_unavailable",
+            "latest_record_quality": reading.quality,
+            "source_update_success": self.coordinator.last_update_success,
             "data_kind": "operator-reported reactor output",
             "status_interpretation": "not inferred from power",
         }
