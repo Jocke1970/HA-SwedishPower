@@ -25,7 +25,7 @@ jobs:
           from pathlib import Path
           manifest = json.loads(Path("custom_components/swedish_power/manifest.json").read_text())
           repo = json.loads(Path("hacs.json").read_text())
-          assert manifest["version"] == "2026.11.0b1"
+          assert manifest["version"] == "2026.11.0b2"
           assert manifest["domain"] == "swedish_power"
           assert repo["homeassistant"] == "2026.11.0"
           assert repo["hide_default_branch"] is True
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Publish 2026.11.0b1 only after all gates pass
+      - name: Publish 2026.11.0b2 only after all gates pass
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -82,7 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           version="$(python -c "import json; print(json.load(open('custom_components/swedish_power/manifest.json'))['version'])")"
-          if [[ "$version" != "2026.11.0b1" ]]; then
+          if [[ "$version" != "2026.11.0b2" ]]; then
             echo "Unexpected manifest version: $version"
             exit 1
           fi
@@ -92,8 +92,8 @@ jobs:
           fi
           gh release create "$version" \
             --target "$GITHUB_SHA" \
-            --title "Swedish Power $version — first supervised beta" \
-            --notes-file RELEASE_NOTES_2026.11.0b1.md \
+            --title "Swedish Power $version — reactor data collection beta" \
+            --notes-file RELEASE_NOTES_2026.11.0b2.md \
             --prerelease \
             --latest=false
           gh release view "$version" --json tagName,isPrerelease,url

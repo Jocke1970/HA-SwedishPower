@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Swedish Power",
-        "description": "Add Sweden's electricity production and consumption from Statnett. Data is requested every 15 minutes."
+        "description": "Add Swedish production, consumption and individual reactor power from official sources. Read-only data is requested every 15 minutes."
       }
     },
     "abort": {
@@ -35,6 +35,24 @@
       },
       "other": {
         "name": "Other generation"
+      },
+      "reactor_f1": {
+        "name": "Forsmark 1"
+      },
+      "reactor_f2": {
+        "name": "Forsmark 2"
+      },
+      "reactor_f3": {
+        "name": "Forsmark 3"
+      },
+      "reactor_r3": {
+        "name": "Ringhals 3"
+      },
+      "reactor_r4": {
+        "name": "Ringhals 4"
+      },
+      "reactor_o3": {
+        "name": "Oskarshamn 3"
       }
     }
   }

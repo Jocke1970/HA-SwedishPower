@@ -1,0 +1,25 @@
+name: Swedish nuclear source discovery
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "tools/nuclear_source_discovery.py"
+      - ".github/workflows/nuclear-source-discovery.yml"
+      - "custom_components/swedish_power/vattenfall.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Live Vattenfall contract; OKG and UMM discovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python tools/nuclear_source_discovery.py

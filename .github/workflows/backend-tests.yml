@@ -40,7 +40,7 @@ jobs:
           from pathlib import Path
 
           root = Path("custom_components/swedish_power")
-          names = ["production", "consumption", "net_exchange", "hydro", "wind", "nuclear", "thermal", "other"]
+          names = ["production", "consumption", "net_exchange", "hydro", "wind", "nuclear", "thermal", "other", "reactor_f1", "reactor_f2", "reactor_f3", "reactor_r3", "reactor_r4", "reactor_o3"]
           manifest = json.loads((root / "manifest.json").read_text())
           assert manifest["domain"] == "swedish_power"
           assert manifest["config_flow"] is True

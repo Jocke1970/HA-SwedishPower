@@ -8,9 +8,9 @@
 | [Statnett production/consumption candidate](https://driftsdata.statnett.no/restapi/ProductionConsumption/GetLatestDetailedOverview) | Detailed production and consumption | **HTTP 200 / JSON verified** | Individual timestamp semantics, actual/planned definitions, unit semantics and reuse terms |
 | [Statnett physical flows candidate](https://driftsdata.statnett.no/restapi/PhysicalFlowMap/GetFlow) | Area-to-area MW flows | **HTTP 200 / JSON verified; 14 Sweden-related pairs parsed** | Direction/sign conventions, stale flow handling and reuse terms |
 | [Svenska kraftnät Kontrollrummet](https://www.svk.se/om-kraftsystemet/kontrollrummet/) | Reference presentation and cross-checking | **Reference page; not assumed a public API** | Source attribution, definitions, publication delays |
-| Vattenfall official power-plant reporting | Forsmark F1–F3, Ringhals R3–R4 unit power | **Access path to validate** | Fetch method, licence/terms, gross/net, measurement time, capacity and availability |
-| OKG official reporting | Oskarshamn O3 unit power | **Access path to validate** | Same checks as Vattenfall |
-| Nord Pool UMM / relevant outage feed | Planned and unplanned unit notices | **Access path to validate** | Permitted API/data access, mapping notices to reactor, updates, amended return estimates |
+| [Vattenfall Forsmark/Ringhals](https://karnkraft.vattenfall.se/) | F1–F3, R3–R4 power | **Direct HTML + embedded JSON verified, 5 reactor IDs and MW unit** | Source rights, production cadence, capacity definition, anomaly behavior |
+| [OKG production meter](https://okg.se/) | O3 power | **HTTP 200, JSON response verified via OKG's own JS endpoint** | Naive local `valueDate`, source rights, DST and freshness |
+| [Nord Pool UMM API](https://ummapi.nordpoolgroup.com/messages) | Reactor notice periods and reported capacity | **Direct HTTP 200 JSON verified; 48 Swedish periods across 6 reactors on a 100-message sample** | Full paging, cancellation/revision handling, permissions and semantics |
 | [Nordisk Kärnkraft](https://www.nordiskkarnkraft.se/sv/se) | Third-party aggregated reactor cross-check | **Reference only** | Terms and provenance; do not build an undisclosed scraping dependency |
 | ENTSO-E Transparency | Optional fallback/validation of generation by type | **Future/optional** | Access token, measured versus delayed data, mapping, licensing |
 | Existing HA Nord Pool entities | Optional SE1–SE4 electricity prices | **Later UI enrichment** | Entity availability and user configuration |
@@ -27,6 +27,8 @@ For every candidate endpoint:
 7. Document behavior on 429/rate limiting, 5xx, malformed payload and source silence.
 
 Do **not** claim SE1–SE4 production-by-type exists until validated. Do **not** infer individual reactor operational status or cause solely from MW output.
+
+See [Nuclear data discovery](NUCLEAR_DATA_DISCOVERY.md) for the exact schemas, observed values, source timestamps and research-only parser limitations.
 
 ## Initial MVP priority
 
