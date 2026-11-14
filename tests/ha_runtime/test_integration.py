@@ -8,6 +8,7 @@ No real Statnett requests or private user data are needed.
 from __future__ import annotations
 
 from copy import deepcopy
+from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
@@ -26,6 +27,9 @@ from custom_components.swedish_power.const import (
     UPDATE_INTERVAL,
 )
 from custom_components.swedish_power.coordinator import SwedishPowerCoordinator
+from custom_components.swedish_power.reactor_coordinator import ReactorSourceCoordinator
+from custom_components.swedish_power.vattenfall import parse_vattenfall_html
+from custom_components.swedish_power.okg import parse_okg_o3
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -69,7 +73,21 @@ def mocked_statnett(source_payloads):
             return deepcopy(flows)
         raise AssertionError(f"Unexpected Statnett URL path: {path}")
 
-    with patch.object(SwedishPowerCoordinator, "_async_get_json", fake_get):
+    async def fake_reactor_update(self):
+        now = datetime.now(timezone.utc)
+        if self.plant == "oskarshamn":
+            return parse_okg_o3({
+                "value": 1432,
+                "valueDate": now.astimezone(ZoneInfo("Europe/Stockholm")).strftime("%Y-%m-%dT%H:%M:%S"),
+                "timestamp": now.isoformat(),
+            }, now=now)
+        html = (FIXTURES / f"vattenfall_{self.plant}_excerpt.html").read_text()
+        html = html.replace("2026-11-14T22:00:00.206Z", now.isoformat())
+        return parse_vattenfall_html(html, self.plant, now=now)
+
+    with patch.object(SwedishPowerCoordinator, "_async_get_json", fake_get), patch.object(
+        ReactorSourceCoordinator, "_async_update_data", fake_reactor_update
+    ):
         yield requested, production, flows
 
 
@@ -87,8 +105,20 @@ async def _setup_entry(hass):
 def _sensor_states(hass, entry):
     registry = er.async_get(hass)
     records = er.async_entries_for_config_entry(registry, entry.entry_id)
-    assert len(records) == 8, [(r.entity_id, r.unique_id) for r in records]
-    return {r.unique_id: hass.states.get(r.entity_id) for r in records}
+    assert len(records) == 14, [(r.entity_id, r.unique_id) for r in records]
+    return {
+        r.unique_id: hass.states.get(r.entity_id)
+        for r in records if "_reactor_" not in r.unique_id
+    }
+
+
+def _reactor_states(hass, entry):
+    registry = er.async_get(hass)
+    records = er.async_entries_for_config_entry(registry, entry.entry_id)
+    return {
+        r.unique_id: hass.states.get(r.entity_id)
+        for r in records if "_reactor_" in r.unique_id
+    }
 
 
 async def test_config_flow_creates_one_sweden_instance(hass, mocked_statnett):
@@ -116,7 +146,7 @@ async def test_eight_entities_and_900_second_coordinator(hass, mocked_statnett):
     """Validate entity registry, source metadata and polling configuration."""
     requests, _, _ = mocked_statnett
     entry = await _setup_entry(hass)
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.statnett
     assert coordinator.update_interval == UPDATE_INTERVAL
     assert coordinator.last_update_success
     assert requests.count(PRODUCTION_PATH) == 1
@@ -136,6 +166,15 @@ async def test_eight_entities_and_900_second_coordinator(hass, mocked_statnett):
     assert production_state.attributes["source"] == "Statnett Driftsdata"
     assert production_state.attributes["timestamp_basis"] == "row"
     assert len(coordinator.data.raw_flows) == 4
+    reactors = _reactor_states(hass, entry)
+    assert set(reactors) == {
+        f"swedish_power_se_reactor_{name}_mw"
+        for name in ("f1", "f2", "f3", "r3", "r4", "o3")
+    }
+    assert float(reactors["swedish_power_se_reactor_f1_mw"].state) == 0.032
+    assert float(reactors["swedish_power_se_reactor_o3_mw"].state) == 1432
+    assert reactors["swedish_power_se_reactor_f2_mw"].attributes["source"] == "Vattenfall"
+    assert reactors["swedish_power_se_reactor_o3_mw"].attributes["source"] == "OKG"
 
 
 async def test_reload_and_unload(hass, mocked_statnett):
@@ -151,7 +190,7 @@ async def test_reload_and_unload(hass, mocked_statnett):
 async def test_network_failure_marks_data_unavailable(hass, mocked_statnett):
     """A production API exception must not leave stale MW marked available."""
     entry = await _setup_entry(hass)
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.statnett
     assert coordinator.last_update_success
 
     async def failing(_path):
@@ -168,7 +207,7 @@ async def test_network_failure_marks_data_unavailable(hass, mocked_statnett):
 async def test_optional_flow_failure_keeps_national_sensors(hass, mocked_statnett):
     """Flow API failure must not discard valid production observations."""
     entry = await _setup_entry(hass)
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.statnett
     original_get = coordinator._async_get_json
 
     async def flaky(path):
@@ -194,7 +233,7 @@ async def test_source_staleness_marks_mw_unavailable(hass, mocked_statnett):
         if name.endswith("Data") and isinstance(rows, list):
             for row in rows:
                 row["measuredAt"] = (datetime.now(timezone.utc) - timedelta(hours=4)).isoformat()
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.statnett
     await coordinator.async_refresh()
     await hass.async_block_till_done()
     states = _sensor_states(hass, entry)
@@ -204,7 +243,7 @@ async def test_source_staleness_marks_mw_unavailable(hass, mocked_statnett):
 async def test_failed_poll_recovers_on_next_success(hass, mocked_statnett):
     """After a transient Statnett timeout, the same sensors recover."""
     entry = await _setup_entry(hass)
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.statnett
     original = coordinator._async_get_json
 
     async def timeout(_path):
@@ -226,7 +265,7 @@ async def test_failed_poll_recovers_on_next_success(hass, mocked_statnett):
 async def test_malformed_production_response_fails_safely(hass, mocked_statnett):
     """A malformed successful HTTP response must not be displayed as data."""
     entry = await _setup_entry(hass)
-    coordinator = entry.runtime_data
+    coordinator = entry.runtime_data.statnett
     original = coordinator._async_get_json
 
     async def malformed(path):
@@ -257,6 +296,8 @@ async def test_diagnostics_do_not_include_raw_payload(hass, mocked_statnett):
     assert len(info["readings"]) == 8
     assert info["readings"]["production"]["quality"] == "valid"
     assert "ProductionData" not in json.dumps(info)
+    assert set(info["reactor_sources"]) == {"forsmark", "ringhals", "oskarshamn"}
+    assert info["reactor_sources"]["oskarshamn"]["readings"]["O3"]["value_mw"] == 1432
 
 
 async def test_first_refresh_failure_results_in_retry_state(hass, mocked_statnett):
