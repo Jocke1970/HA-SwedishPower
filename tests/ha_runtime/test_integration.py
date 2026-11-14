@@ -388,3 +388,39 @@ async def test_reactors_do_not_duplicate_after_reload(hass, mocked_statnett):
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     assert set(_reactor_states(hass, entry)) == original_ids
+
+
+async def test_first_okg_failure_does_not_block_statnett_setup(hass, mocked_statnett):
+    """Statnett and other reactors must start when optional O3 is offline."""
+    original = ReactorSourceCoordinator._async_update_data
+
+    async def fails_on_okg(self):
+        if self.plant == "oskarshamn":
+            raise TimeoutError("mock O3 initial outage")
+        return await original(self)
+
+    with patch.object(ReactorSourceCoordinator, "_async_update_data", fails_on_okg):
+        entry = await _setup_entry(hass)
+    assert float(_sensor_states(hass, entry)["swedish_power_se_production"].state) == 20323
+    reactor_states = _reactor_states(hass, entry)
+    assert reactor_states["swedish_power_se_reactor_o3_mw"].state == "unavailable"
+    assert float(reactor_states["swedish_power_se_reactor_f2_mw"].state) == 1129.125
+
+
+async def test_stale_reactor_is_unavailable_but_others_remain_valid(hass, mocked_statnett):
+    """A source timestamp from hours ago must never be refreshed by poll time."""
+    from dataclasses import replace
+    entry = await _setup_entry(hass)
+    source = entry.runtime_data.reactors["ringhals"]
+    old = source.data
+    changed = replace(old, reactors={
+        k: replace(v, quality="stale")
+        for k, v in old.reactors.items()
+    })
+    source.async_set_updated_data(changed)
+    await hass.async_block_till_done()
+    states = _reactor_states(hass, entry)
+    assert states["swedish_power_se_reactor_r3_mw"].state == "unavailable"
+    assert states["swedish_power_se_reactor_r4_mw"].state == "unavailable"
+    assert float(states["swedish_power_se_reactor_f2_mw"].state) == 1129.125
+    assert float(states["swedish_power_se_reactor_o3_mw"].state) == 1432
