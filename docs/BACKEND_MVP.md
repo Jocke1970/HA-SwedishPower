@@ -1,6 +1,6 @@
 # Backend MVP — Sweden only (development branch)
 
-> **Status:** implementation in `dev`; **not yet a beta release or HA-installed verification**.
+> **Status:** backend MVP in `dev`; **Home Assistant Core 2026.11 integration tests passed**. No beta release or supervised on-device installation yet.
 >
 > Scope: Statnett's **national Sweden** production / consumption / raw-sign net-exchange data. Default refresh **15 minutes**. No frequency stream, individual reactor sensors or directional flow cards in this milestone.
 
@@ -62,7 +62,20 @@ python -m compileall -q custom_components tests tools
 python -m json.tool custom_components/swedish_power/manifest.json >/dev/null
 ```
 
-An Actions workflow also executes the source probe directly against Statnett to confirm the parser is compatible with current JSON. Those checks **do not replace a Home Assistant runtime test**. Before beta promotion we still need to verify UI setup, entity registration, reload/unload, Recorder history, and behavior on real outages in a safe HA test environment.
+An Actions workflow also executes the source probe directly against Statnett to confirm the parser is compatible with current JSON. **Home Assistant Core 2026.11 + pytest-homeassistant 2026.11** was used in GitHub Actions on Python 3.14 to verify the actual integration lifecycle with network-mocked source responses.
+
+**Tests:** [15 offline/parser tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43617129635), [10 Home Assistant integration tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43617129627), [live Statnett contract test passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43609117170).
+
+HA integration tests cover config flow and duplicate prevention, eight entity registrations, default update interval, reload/unload, API timeout → unavailable, timeout → recovery, optional flow failure, malformed production payload, source staleness and diagnostics.
+
+To run the HA tests independently (requires **Python 3.14.2+**):
+
+```bash
+python -m pip install "homeassistant==2026.11.0" "pytest-homeassistant==2026.11.0"
+python -m pytest tests/ha_runtime -q
+```
+
+These are controlled **HA runtime tests with mocked HTTP**, not a physical installation in the user's Home Assistant. A supervised beta should still verify first-start, 15-minute real polling, Recorder history/statistics, and transient outage recovery with genuine traffic.
 
 ## Constraints / next work
 
@@ -70,4 +83,4 @@ An Actions workflow also executes the source probe directly against Statnett to 
 2. Confirm data source access/reuse terms and attribution.
 3. Verify publication latency and 90-minute stale threshold over multiple 15-minute periods.
 4. Separate reactor adapters (Vattenfall, OKG, UMM) belong to the next milestone. A 0 MW national nuclear share is **not** evidence of any unit failure.
-5. Beta is released **after** tests; don't advance `dev` changes straight to `main`.
+5. Automated HA compatibility/error tests are complete, but **physical beta field testing has not started**. Follow `dev → beta → main` and avoid deploying `dev` directly.
