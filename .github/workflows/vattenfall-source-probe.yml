@@ -1,0 +1,108 @@
+name: Vattenfall Forsmark Ringhals direct HTML/JSON probe
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - ".github/workflows/vattenfall-source-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  direct-source:
+    name: Read-only two-page embedded JSON inspection
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Inspect structured JSON on official production pages
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from html.parser import HTMLParser
+          from urllib.request import Request, urlopen
+
+          class DataJsonScriptFinder(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.inside = False
+                  self.parts = []
+                  self.payloads = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script" and any(key.lower() == "data-json-data" for key, _ in attrs):
+                      self.inside = True
+                      self.parts = []
+
+              def handle_data(self, data):
+                  if self.inside:
+                      self.parts.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.inside:
+                      self.inside = False
+                      raw = "".join(self.parts).strip()
+                      try:
+                          self.payloads.append(json.loads(raw))
+                      except (ValueError, TypeError):
+                          self.payloads.append({"_parse_error": "invalid JSON"})
+                      self.parts = []
+
+          def inspect(plant, expected):
+              url = f"https://karnkraft.vattenfall.se/{plant}/produktion/"
+              request = Request(url, headers={
+                  "Accept": "text/html",
+                  "User-Agent": "HA-SwedishPower-Research/0.1 (source schema verification)",
+              })
+              with urlopen(request, timeout=20) as response:
+                  content_type = response.headers.get("Content-Type", "")
+                  status = response.status
+                  html = response.read(1_500_000).decode("utf-8", "replace")
+              parser = DataJsonScriptFinder()
+              parser.feed(html)
+              print(f"--- {plant} ---")
+              print("HTTP status:", status)
+              print("Content-Type:", content_type)
+              print("HTML chars:", len(html))
+              print("JSON script tags:", len(parser.payloads))
+              print("UTC probe time:", datetime.now(timezone.utc).isoformat())
+              candidate = next((
+                  item for item in parser.payloads
+                  if isinstance(item, dict) and isinstance(item.get("blockProductionDataList"), list)
+              ), None)
+              if candidate is None:
+                  print("ERROR: No JSON object with blockProductionDataList")
+                  print("JSON root keys:", [list(p)[:12] if isinstance(p, dict) else type(p).__name__ for p in parser.payloads])
+                  return False
+              print("JSON keys:", sorted(candidate))
+              print("Source timestamp:", candidate.get("timestamp"))
+              blocks = candidate["blockProductionDataList"]
+              print("Block count:", len(blocks))
+              names = set()
+              for block in blocks:
+                  if not isinstance(block, dict):
+                      print("Unexpected block type:", type(block).__name__)
+                      continue
+                  name = block.get("name")
+                  names.add(name)
+                  print("block:", name,
+                        "production_mw:", block.get("production"),
+                        "production_type:", type(block.get("production")).__name__,
+                        "percent:", block.get("percent"),
+                        "keys:", sorted(block))
+              print("Expected blocks:", sorted(expected))
+              print("Found expected blocks:", sorted(names.intersection(expected)))
+              ok = expected.issubset(names)
+              print("Schema recognition:", "PASS" if ok else "MISSING BLOCKS")
+              return ok
+
+          result = [
+              inspect("forsmark", {"F1", "F2", "F3"}),
+              inspect("ringhals", {"R3", "R4"}),
+          ]
+          print("Both source schemas:", "PASS" if all(result) else "INCOMPLETE")
+          raise SystemExit(0 if all(result) else 1)
+          PY
