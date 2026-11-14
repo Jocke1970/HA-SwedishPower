@@ -1,6 +1,6 @@
 # Roadmap — HA-SwedishPower
 
-> Status: **Backend MVP implemented on dev; HA runtime validation pending** · Scope: **Sweden first** · Last reviewed: **2026-11-14**
+> Status: **Backend MVP on dev; 10 HA integration tests and 15 parser tests passed; on-device beta pending** · Scope: **Sweden first** · Last reviewed: **2026-11-14**
 
 Checked milestones below identify features implemented in `dev`. There is **no production-ready release or Lovelace card yet**.
 
@@ -26,18 +26,19 @@ Checked milestones below identify features implemented in `dev`. There is **no p
 
 **Exit criteria:** at least one verified, reproducible Swedish production/consumption data fetch, a documented schema, and an explicit list of unresolved fields. Do not start a production scraper on assumptions.
 
-## Phase 1 — Home Assistant backend MVP (P1, implemented on dev; HA validation pending)
+## Phase 1 — Home Assistant backend MVP (P1, HA 2026.11 automated tests passed; on-device beta pending)
 
 - [x] Create `custom_components/swedish_power/` with UI config flow, `DataUpdateCoordinator`, diagnostics and eight sensor entities.
 - [x] Implement source reads with default **900-second** refresh, 15-second timeouts and coordinator-managed retries.
 - [ ] Decide whether a rate-limited manual refresh is desirable; not exposed by this first implementation.
 - [x] Map eight country-level source fields to MW sensor descriptions; live parser verified.
 - [x] Preserve row/snapshot timestamps, handle missing/stale/future values and optional flow failure in code.
-- [ ] Test Home Assistant runtime setup, reload, error behavior, and Recorder statistics end to end.
+- [x] Test HA 2026.11 config flow, sensors, reload/unload, error/recovery, diagnostics and stale source behavior with mocked HTTP.
+- [ ] Confirm Recorder history and long-term statistics through supervised physical beta testing.
 - [x] Add nine backend data-model tests (15 total repository tests passed) and a live JSON contract check.
-- [ ] Add coordinator network-failure tests and full HA runtime integration tests.
+- [x] Add 10 real HA integration tests, including first-refresh retry, coordinator failure/recovery and malformed data.
 
-**Exit criteria:** supervised beta testing of functioning entities in HA; no fabricated values, and no false 0 MW on fetch failure.
+**Exit criteria:** supervised beta testing of functioning entities in the user's HA; no fabricated values, and no false 0 MW on fetch failure. Automation tests pass, but in-device field validation remains.
 
 ## Phase 2 — Swedish bidding-zone flows (P1/P2)
 
