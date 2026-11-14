@@ -4,9 +4,9 @@
 
 | Candidate | Intended Sweden-only data | Initial status | Required verification |
 | --- | --- | --- | --- |
-| [Statnett Driftsdata REST overview](https://driftsdata.statnett.no/restapi/) | Swedish national generation mix, consumption, net exchange, physical SE1–SE4 flows | **Candidate; exact live responses not yet confirmed in this repository** | Endpoint status, schema, timestamps, attribution, permission, cadence, region coverage |
-| [Statnett production/consumption candidate](https://driftsdata.statnett.no/restapi/ProductionConsumption/GetLatestDetailedOverview) | Detailed production and consumption | **Test required** | Field meanings, whether values are measured/estimated/planned, units, Swedish coverage |
-| [Statnett physical flows candidate](https://driftsdata.statnett.no/restapi/PhysicalFlowMap/GetFlow) | Area-to-area MW flows | **Test required** | Flow direction, sign convention, SE pairs, timestamp and duplicates |
+| [Statnett Driftsdata REST overview](https://driftsdata.statnett.no/restapi/) | Swedish national generation mix, consumption, net exchange, physical SE1–SE4 flows | **Direct JSON access verified on 2026-11-14 via GitHub Actions; semantics require further checks** | Endpoint status, schema, timestamps, attribution, permission, cadence, region coverage |
+| [Statnett production/consumption candidate](https://driftsdata.statnett.no/restapi/ProductionConsumption/GetLatestDetailedOverview) | Detailed production and consumption | **HTTP 200 / JSON verified** | Individual timestamp semantics, actual/planned definitions, unit semantics and reuse terms |
+| [Statnett physical flows candidate](https://driftsdata.statnett.no/restapi/PhysicalFlowMap/GetFlow) | Area-to-area MW flows | **HTTP 200 / JSON verified; 14 Sweden-related pairs parsed** | Direction/sign conventions, stale flow handling and reuse terms |
 | [Svenska kraftnät Kontrollrummet](https://www.svk.se/om-kraftsystemet/kontrollrummet/) | Reference presentation and cross-checking | **Reference page; not assumed a public API** | Source attribution, definitions, publication delays |
 | Vattenfall official power-plant reporting | Forsmark F1–F3, Ringhals R3–R4 unit power | **Access path to validate** | Fetch method, licence/terms, gross/net, measurement time, capacity and availability |
 | OKG official reporting | Oskarshamn O3 unit power | **Access path to validate** | Same checks as Vattenfall |
@@ -36,3 +36,13 @@ Do **not** claim SE1–SE4 production-by-type exists until validated. Do **not**
 4. Structured UMM notices and status reconciliation.
 
 **Out of first release:** monitoring neighboring countries' national generation, high-frequency live refresh, and other Nordic dashboards.
+
+## Verified direct HTTP baseline — 2026-11-14
+
+Two GitHub Actions runs confirmed `HTTP 200` and `application/json; charset=utf-8` directly from the two Statnett endpoints, **without an API key or a third-party proxy**. The second run also passed all **six offline tests** and parsed the live Swedish values using the project Python probe:
+
+- [Direct HTTP run](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43605396288)
+- [Parser and offline tests run](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43605579911)
+- [Detailed validation report](ISSUE_001_STATNETT_VALIDATION.md)
+
+The parser identified **14 flow pairs involving SE1–SE4**: **3 internal pairs** and **11 cross-border pairs**. Direction/sign has **not yet been established**. Production, consumption and exchange returned national `SE` fields; direct per-bidding-zone production-by-type remains **unverified**. Current snapshot `MeasuredAt` is available even though some aggregate row `measuredAt` fields are null.
