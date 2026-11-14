@@ -140,7 +140,7 @@ def probe_okg_output():
     if isinstance(payload, dict):
         print("  field names:", sorted(payload))
         for key, value in payload.items():
-            if key.lower() in {"value", "unit", "timestamp", "updatedat", "measuredat", "time"}:
+            if key.lower() in {"value", "unit", "timestamp", "updatedat", "measuredat", "time", "valuedate"}:
                 print("  field:", key, repr(value)[:160], "type:", type(value).__name__)
     else:
         print("  root type:", type(payload).__name__)
