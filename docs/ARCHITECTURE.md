@@ -1,8 +1,8 @@
-# Proposed architecture (not yet implemented)
+# Architecture — backend MVP on dev, frontend planned
 
 ## Scope
 
-A **Sweden-only**, read-only Home Assistant integration and a separately maintained Lovelace frontend. The integration presents third-party reported grid data; it does not control the power system, meter electricity at the user's premises or guarantee instantaneous accuracy.
+The **Sweden-only read-only backend MVP is implemented in `dev`**; the separate Lovelace frontend, reactor adapters and directional flow sensors are still planned. This integration presents third-party reported grid data; it does not control the power system, meter electricity at the user's premises or guarantee instantaneous accuracy.
 
 ```text
 Statnett (candidate backbone) ─┐
@@ -16,18 +16,25 @@ UMM (outages, if permitted) ────┘                          |
                                           HA-SwedishPower-Card (read-only)
 ```
 
-One adapter failing should not erase data from other independent adapters.
+**Currently implemented:** the Statnett national-production adapter and optional raw-flow fetching. Vattenfall, OKG, UMM and the card are not yet implemented. An optional flow-fetch failure does not discard valid national production data.
 
-## Planned repository layout
+## Repository layout (implemented components marked)
 
 ```text
-custom_components/swedish_power/  # HA integration: to be implemented
+custom_components/swedish_power/  # Implemented in dev
   manifest.json
   __init__.py
   config_flow.py
   coordinator.py
   sensor.py
-  sources/
+  model.py
+  const.py
+  diagnostics.py
+  strings.json
+  translations/
+    sv.json
+    en.json
+  sources/                     # Future reactor adapters
 www/                             # Lovelace JS frontend, to be implemented
   swedish-power-card.js
   translations/
@@ -42,7 +49,7 @@ README.md
 LICENSE
 ```
 
-This is a **proposed** layout, not a claim that these code files currently exist. The backend and frontend may later be split into different repositories if packaging warrants it.
+The backend files above, excluding the future `sources/` adapters, are in `dev`. The `www/` Lovelace card is **not yet present**. Backend and frontend may be split into different repositories later if packaging warrants it.
 
 ## Proposed normalized data contract
 
@@ -53,7 +60,7 @@ Every numeric record should carry, wherever source-provided:
 - `scope`: `SE` or an explicit Swedish bidding-zone/flow pair, not inferred by display position;
 - `quality`: valid / stale / partial / invalid / unavailable, with diagnostics when source metadata is insufficient.
 
-Source-specific records can add `production_type`, `from_area`, `to_area`, `gross_or_net`, `reference_capacity_mw`, or outage notice metadata. The field mapping remains **provisional until raw payloads are tested**.
+Source-specific records can add `production_type`, `from_area`, `to_area`, `gross_or_net`, `reference_capacity_mw`, or outage notice metadata. National Swedish field names and direct JSON access have been verified by GitHub Actions. Semantic interpretation (especially flow direction and exchange sign) remains provisional.
 
 ## Update and failure semantics
 
@@ -80,6 +87,6 @@ Show UMM notices, last update and expected return only when genuinely supplied, 
 
 ## Localization and release workflow
 
-- External **sv** and **en** translation files for the frontend. Backend translation support should follow Home Assistant's native conventions.
+- The **backend** already has external `sv` and `en` translation files and a `strings.json`; the frontend translations remain planned.
 - UI defaults to Home Assistant theme and exposes a visual editor when ready.
 - **dev → beta → main**: new work on dev; only promote when tests and manual review pass. User installs beta for evaluation, never dev.
