@@ -125,6 +125,27 @@ def probe_okg_javascript():
             print("    JS context:", excerpt[:420])
 
 
+def probe_okg_output():
+    url = "https://okg.se/.netlify/functions/getReactorOutput"
+    status, ct, raw = fetch(url, "application/json")
+    print(f"OKG O3 output: HTTP {status}, type={ct}, bytes={len(raw)}")
+    if status != 200:
+        print("  Not a confirmed direct HTTP 200 response")
+        return
+    try:
+        payload = json.loads(raw)
+    except ValueError:
+        print("  Not JSON")
+        return
+    if isinstance(payload, dict):
+        print("  field names:", sorted(payload))
+        for key, value in payload.items():
+            if key.lower() in {"value", "unit", "timestamp", "updatedat", "measuredat", "time"}:
+                print("  field:", key, repr(value)[:160], "type:", type(value).__name__)
+    else:
+        print("  root type:", type(payload).__name__)
+
+
 def probe_umm():
     base = "https://ummapi.nordpoolgroup.com/messages"
     query = urlencode({"messageTypes": 1, "fuelTypes": 14, "limit": 2, "skip": 0})
@@ -165,6 +186,8 @@ if __name__ == "__main__":
     probe_okg()
     print("=== OKG production-meter JavaScript ===")
     probe_okg_javascript()
+    print("=== OKG O3 output direct HTTP ===")
+    probe_okg_output()
     print("=== Nord Pool UMM discovery (read-only) ===")
     probe_umm()
     print("VERIFIED VATTENFALL CONTRACT:", "PASS" if passed else "FAIL")
