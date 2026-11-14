@@ -21,7 +21,7 @@ from swedish_power.model import (  # noqa: E402
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
-NOW = datetime(2026, 11, 14, 14, 40, tzinfo=timezone.utc)
+NOW = datetime(2026, 11, 14, 13, 35, tzinfo=timezone.utc)
 
 
 class BackendModelTests(unittest.TestCase):
@@ -60,6 +60,7 @@ class BackendModelTests(unittest.TestCase):
     def test_older_source_data_is_stale_even_after_new_fetch(self):
         payload = self.production()
         payload["MeasuredAt"] = "2026-11-14T11:00:00+00:00"
+        payload["NuclearData"][0]["measuredAt"] = "2026-11-14T10:00:00+00:00"
         snapshot = parse_production(payload, now=NOW, max_age=timedelta(minutes=90))
         self.assertEqual(snapshot.readings["production"].quality, "stale")
         self.assertEqual(snapshot.readings["nuclear"].quality, "stale")
