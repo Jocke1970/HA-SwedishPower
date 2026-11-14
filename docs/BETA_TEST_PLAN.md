@@ -1,5 +1,33 @@
 # HA-SwedishPower — supervised beta 2026.11.0b1
 
+## IMPORTANT: Marketplace cannot add this beta yet (2026-11-14)
+
+**Verified limitation:** In Home Assistant 2026.11, Marketplace's **Add from link** first checks the GitHub repository's default branch (`main`). The default branch currently has no `hacs.json` or `custom_components/swedish_power/`, because the implementation exists only in `dev`/`beta` and was published as a **prerelease**.
+
+The error **"missing content Marketplace can install in version main"** is therefore expected. It is **not a failed Statnett API or backend test**. Enabling prereleases cannot fix initial repository discovery.
+
+**We deliberately preserve `dev → beta → main` and do not promote an unfield-tested integration to `main` to bypass this error.** For b1 use the manual install below. When a beta passes field testing and the complete installable repository reaches `main`, Marketplace can be revisited.
+
+## Manual supervised beta installation — recommended for b1
+
+1. Back up the HA configuration. In the Marketplace **Add from link** dialog click **Cancel**; do not select another integration type.
+2. Open the published release: https://github.com/Jocke1970/HA-SwedishPower/releases/tag/2026.11.0b1
+3. Under **Assets**, download **Source code (zip)** for the **2026.11.0b1** release — **not** the `dev` or `main` branch.
+4. Extract the archive on your computer. Inside it, open `custom_components/swedish_power/`.
+5. Using your Home Assistant file-access method (Studio Code Server, Samba share, or SSH), copy the **whole `swedish_power` directory** into your HA configuration's `custom_components/` directory. Resulting paths should be:
+   - `/config/custom_components/swedish_power/manifest.json`
+   - `/config/custom_components/swedish_power/__init__.py`
+   - `/config/custom_components/swedish_power/sensor.py`
+   - and all other files/subfolders including `translations/`.
+   Create `custom_components` if needed. Do **not** copy the entire GitHub archive into `custom_components`.
+6. **Restart Home Assistant** to load the new custom integration.
+7. Go to **Settings → Devices & services → Add integration**, search for **Swedish Power**, and confirm Sweden.
+8. Inspect the **eight** sensors, source timestamps and diagnostics. Observe at least four scheduled refresh cycles (about an hour).
+
+**Manual installs do not receive Marketplace-managed updates.** For later betas, replace the `swedish_power` folder with the files from that **specific published beta tag**, restart HA, and verify the manifest version. Do not copy `dev` by accident.
+
+If the integration doesn't show after restarting, check **Settings → System → Logs** for a `swedish_power` import/config-flow error; report the sanitized error in beta test Issue #6.
+
 **Branch policy:** `dev → beta → main`. Test only the `beta` prerelease; **do not install `dev`**. `main` must remain unchanged until beta is accepted.
 
 ## Prerequisites
@@ -11,16 +39,9 @@
 - The repository is public on GitHub; `hacs.json` is required for the 2026.11 Marketplace.
 - The **GitHub prerelease must exist** before attempting Marketplace installation. A branch or tag alone is not a published release.
 
-## Installation using Marketplace (Home Assistant 2026.11+)
+## Marketplace setup — postponed until main has installable content
 
-1. Open **Settings → Marketplace**, then use **Add from link**.
-2. Enter `https://github.com/Jocke1970/HA-SwedishPower`. A GitHub device sign-in may be requested for custom repositories.
-3. Enable the repository's **Pre-release** entity under **Settings → Devices & services → Marketplace** and switch it on. The entity may be disabled by default and need enabling first.
-4. On the repository page in Marketplace, install prerelease **2026.11.0b1**. Verify that the selected release is `2026.11.0b1`, **not `dev` or `main`**.
-5. Restart Home Assistant after installation if prompted.
-6. Open **Settings → Devices & services → Add integration**, find **Swedish Power**, and confirm **Sweden**.
-
-If the repository is not installable or the release is not selectable, do not manually substitute `main` or `dev`. Collect the error message and link it to a new issue.
+Marketplace installation of this prerelease is **not available while the default branch lacks installable integration files**. Follow the manual beta procedure above instead. Do not install an untested `main` stub.
 
 ## Beta smoke checklist
 
