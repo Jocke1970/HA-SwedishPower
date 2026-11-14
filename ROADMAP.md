@@ -49,11 +49,13 @@ Checked milestones below identify features implemented in `dev`. There is **no p
 
 **Exit criteria:** a correct, timestamped Swedish flow model with explicit gaps and tests.
 
-## Phase 3 — Nuclear detail (P1/P2)
+## Phase 3 — Nuclear detail (P1/P2, source adapters implemented on dev; not deployed)
 
-- [ ] Add independent source adapters for Forsmark **1–3**, Ringhals **3–4**, and Oskarshamn **3**.
+- [x] Implement research-only parsers/fetchers in `dev` for Vattenfall Forsmark **1–3**, Ringhals **3–4** and OKG Oskarshamn **3**, preserving actual measurement times and missing data.
+- [ ] Wire adapters into isolated HA source coordinators, verify network-failure behavior, and expose six stable-ID reactor MW sensors after integration tests.
 - [ ] Track each unit's reported power, measurement time, validated net/gross reference capacity and data quality.
-- [ ] Integrate verified outage/maintenance notices (UMM) where access and reuse are permitted.
+- [x] Verify Nord Pool UMM endpoint/schema and implement conservative Sweden-specific notice parser in `dev` (48 periods for six reactors matched in a live first-page test).
+- [ ] Complete UMM pagination, revisions/cancellations and permitted-use verification before attaching notices as operational statuses.
 - [ ] Distinguish **normal**, **reduced**, **planned outage**, **unplanned outage**, and **unknown** only when evidence permits.
 - [ ] Provide last notice, cause, estimated return and notice update time when available.
 - [ ] Never infer that 0 MW alone means an unplanned trip. Explain possible differences from national nuclear production totals.
