@@ -1,8 +1,8 @@
 # HA-SwedishPower ⚡🇸🇪
 
-A planned **Sweden-first Home Assistant integration and Lovelace card** for exploring the Swedish electricity system.
+A developing **Sweden-first Home Assistant integration and planned Lovelace card** for exploring the Swedish electricity system.
 
-> **Project status: planning / data-source validation.** No functioning integration or card has been released yet. Do not install this repository as if it were production-ready.
+> **Project status: backend MVP implemented in `dev`, not yet released or tested inside Home Assistant.** The Lovelace card is still planned. Do not install `dev` as a production integration.
 
 ## Vision
 
@@ -18,13 +18,15 @@ A Sweden-focused control room with:
 
 ## Sources under evaluation
 
-**Statnett Driftsdata** is the candidate backbone for Swedish grid production and flows. Vattenfall, OKG and outage notices are candidates for unit-level nuclear detail. The project will not assume API endpoints, terms of use, sign conventions, or per-zone data exist until tested.
+**Statnett Driftsdata** direct endpoints for Sweden's country-level production/consumption and raw area flows returned HTTP 200/JSON in GitHub Actions. The new backend parser also passed a live contract check. Flow direction, access/reuse terms and deployment behavior still need verification. Vattenfall, OKG and UMM are planned sources for individual reactors.
 
 See [Data sources and verification](docs/DATA_SOURCES.md).
 
 ## Project documentation
 
 - [Roadmap and milestones](ROADMAP.md)
+- [Backend MVP, limitations and planned beta test](docs/BACKEND_MVP.md)
+- [Live Statnett verification log](docs/ISSUE_001_STATNETT_VALIDATION.md)
 - [Proposed architecture and safety rules](docs/ARCHITECTURE.md)
 - [Data-source validation register](docs/DATA_SOURCES.md)
 
@@ -34,7 +36,14 @@ See [Data sources and verification](docs/DATA_SOURCES.md).
 2. `beta` — supervised Home Assistant testing;
 3. `main` — validated stable releases and documentation.
 
-The first usable milestone is a tested backend with trustworthy Swedish electricity sensors, **not** a live control-room UI.
+The initial backend includes eight country-level MW sensors and 15-minute polling. Its code passes offline tests and a direct-source parser check, but still needs actual Home Assistant integration testing before beta promotion.
+
+## Development verification
+
+- [Backend offline checks — 15 tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43608983504)
+- [Backend live Statnett parser check — passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43609117170)
+
+The flow endpoint's raw records are available only for diagnostics until direction/sign semantics are verified. No standalone reactor entities or custom Lovelace card have been implemented yet.
 
 ## Scope boundaries
 
