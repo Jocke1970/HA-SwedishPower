@@ -318,3 +318,73 @@ async def test_first_refresh_failure_results_in_retry_state(hass, mocked_statnet
         result = await hass.config_entries.async_setup(entry.entry_id)
     assert not result
     assert entry.state == ConfigEntryState.SETUP_RETRY
+
+
+async def test_okg_outage_is_isolated_and_recovers(hass, mocked_statnett):
+    """One source outage cannot make Statnett or the other reactors unavailable."""
+    entry = await _setup_entry(hass)
+    source = entry.runtime_data.reactors["oskarshamn"]
+    original = source._async_update_data
+
+    async def failing():
+        raise TimeoutError("mock O3 source outage")
+
+    with patch.object(source, "_async_update_data", failing):
+        await source.async_refresh()
+        await hass.async_block_till_done()
+    states = _reactor_states(hass, entry)
+    assert states["swedish_power_se_reactor_o3_mw"].state == "unavailable"
+    assert float(states["swedish_power_se_reactor_f2_mw"].state) == 1129.125
+    assert float(_sensor_states(hass, entry)["swedish_power_se_production"].state) == 20323
+
+    with patch.object(source, "_async_update_data", original):
+        await source.async_refresh()
+        await hass.async_block_till_done()
+    assert float(_reactor_states(hass, entry)["swedish_power_se_reactor_o3_mw"].state) == 1432
+
+
+async def test_forsmark_failure_is_independent_from_ringhals(hass, mocked_statnett):
+    """When Forsmark is missing, Ringhals and O3 keep their own measurements."""
+    entry = await _setup_entry(hass)
+    source = entry.runtime_data.reactors["forsmark"]
+
+    async def failing():
+        raise TimeoutError("mock Forsmark source outage")
+
+    with patch.object(source, "_async_update_data", failing):
+        await source.async_refresh()
+        await hass.async_block_till_done()
+
+    states = _reactor_states(hass, entry)
+    for name in ("f1", "f2", "f3"):
+        assert states[f"swedish_power_se_reactor_{name}_mw"].state == "unavailable"
+    assert states["swedish_power_se_reactor_r3_mw"].state in ("0", "0.0")
+    assert float(states["swedish_power_se_reactor_o3_mw"].state) == 1432
+
+
+async def test_null_reactor_mw_is_not_a_valid_zero(hass, mocked_statnett):
+    """A missing F1 value becomes unavailable; another valid zero stays zero."""
+    from dataclasses import replace
+    entry = await _setup_entry(hass)
+    source = entry.runtime_data.reactors["forsmark"]
+    old = source.data
+    new = replace(old, reactors={
+        **old.reactors,
+        "F1": replace(old.reactors["F1"], power_mw=None, quality="missing"),
+    })
+    source.async_set_updated_data(new)
+    await hass.async_block_till_done()
+    states = _reactor_states(hass, entry)
+    assert states["swedish_power_se_reactor_f1_mw"].state == "unavailable"
+    assert states["swedish_power_se_reactor_f3_mw"].state in ("0", "0.0")
+
+
+async def test_reactors_do_not_duplicate_after_reload(hass, mocked_statnett):
+    entry = await _setup_entry(hass)
+    original_ids = set(_reactor_states(hass, entry))
+    assert len(original_ids) == 6
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert set(_reactor_states(hass, entry)) == original_ids
