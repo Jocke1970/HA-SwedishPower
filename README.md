@@ -22,13 +22,13 @@ A Sweden-focused control room with:
 
 See [Data sources and verification](docs/DATA_SOURCES.md).
 
-## Beta installation (Home Assistant 2026.11+)
+## Beta 2026.11.0b1 installation (manual until main is installable)
 
-For the published `2026.11.0b1` prerelease (check [Releases](https://github.com/Jocke1970/HA-SwedishPower/releases)), use the built-in **Marketplace** at **Settings → Marketplace → Add from link**, and enter this repository URL. On the repository's Marketplace device under **Settings → Devices & services → Marketplace**, enable its normally disabled **Pre-release** entity and switch it on; then select the beta release. Restart Home Assistant, then add **Swedish Power** under **Settings → Devices & services**.
+**Known Home Assistant 2026.11 Marketplace limitation:** `Add from link` checks the repository's default branch (`main`) before adding a custom integration. We intentionally keep the unfield-tested beta code off `main`, so Marketplace currently reports **"missing content ... in version main"**. The beta release itself exists and has passed automated tests. We will not move an untested release into `main` just to bypass discovery.
 
-Read the [supervised beta checklist](docs/BETA_TEST_PLAN.md) first. If the version cannot be selected, do **not** install `dev` or `main` as a replacement. Report the problem or use the published beta source only after verifying its tag. Releasing the prerelease does not constitute a stable release.
+For supervised testing, download **Source code (zip)** from the [published 2026.11.0b1 prerelease](https://github.com/Jocke1970/HA-SwedishPower/releases/tag/2026.11.0b1). Extract it and copy **only** the entire `custom_components/swedish_power` directory into Home Assistant's configuration folder, resulting in `/config/custom_components/swedish_power/manifest.json` and the other Python and translation files. Restart HA, then add **Swedish Power** from **Settings → Devices & services**.
 
-**Not included in b1:** SE1–SE4 directional sensors, reactor-by-reactor details, and the Lovelace card.
+**Manual installation is not managed by Marketplace**, so future beta updates also need manual file replacement and a restart. Never install code directly from the `dev` branch. See the [complete beta test plan](docs/BETA_TEST_PLAN.md) and [beta field-test issue](https://github.com/Jocke1970/HA-SwedishPower/issues/6).
 
 ## Project documentation
 
