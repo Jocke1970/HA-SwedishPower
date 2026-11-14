@@ -2,7 +2,7 @@
 
 A developing **Sweden-first Home Assistant integration and planned Lovelace card** for exploring the Swedish electricity system.
 
-> **Project status: backend MVP implemented in `dev`, not yet released or tested inside Home Assistant.** The Lovelace card is still planned. Do not install `dev` as a production integration.
+> **Project status: backend MVP implemented in `dev`, validated in an automated Home Assistant 2026.11 test runtime (10/10 tests passed); not yet beta-released or field-tested on the user's HA.** The Lovelace card is still planned. Do not install `dev` as a production integration.
 
 ## Vision
 
@@ -36,11 +36,12 @@ See [Data sources and verification](docs/DATA_SOURCES.md).
 2. `beta` — supervised Home Assistant testing;
 3. `main` — validated stable releases and documentation.
 
-The initial backend includes eight country-level MW sensors and 15-minute polling. Its code passes offline tests and a direct-source parser check, but still needs actual Home Assistant integration testing before beta promotion.
+The initial backend includes eight country-level MW sensors and 15-minute polling. Direct Statnett JSON parsing, offline unit tests and real HA 2026.11 lifecycle tests with mocked HTTP are green. Supervised beta field testing and source policy checks remain before stable release.
 
 ## Development verification
 
-- [Backend offline checks — 15 tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43608983504)
+- [Backend offline checks — 15 tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43617129635)
+- [Home Assistant 2026.11 — 10 integration tests passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43617129627)
 - [Backend live Statnett parser check — passed](https://github.com/Jocke1970/HA-SwedishPower/actions/runs/43609117170)
 
 The flow endpoint's raw records are available only for diagnostics until direction/sign semantics are verified. No standalone reactor entities or custom Lovelace card have been implemented yet.
