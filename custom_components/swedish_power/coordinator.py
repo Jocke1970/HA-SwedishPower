@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import logging
 from typing import Any
 
-from aiohttp import ClientError, ClientSession
+from aiohttp import ClientSession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -55,7 +55,7 @@ class SwedishPowerCoordinator(DataUpdateCoordinator[SwedishPowerData]):
         async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
             async with self._session.get(
                 url,
-                headers={"Accept": "application/json"},
+                headers={"Accept": "application/json", "User-Agent": "HA-SwedishPower/2026.11.0b1"},
             ) as response:
                 response.raise_for_status()
                 if "json" not in response.content_type.lower():
