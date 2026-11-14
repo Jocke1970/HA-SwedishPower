@@ -1,17 +1,17 @@
 {
   "domain": "swedish_power",
   "name": "Swedish Power",
-  "version": "2026.11.0b1",
-  "documentation": "https://github.com/Jocke1970/HA-SwedishPower",
-  "issue_tracker": "https://github.com/Jocke1970/HA-SwedishPower/issues",
+  "categories": [
+    "energy.meters_monitoring"
+  ],
   "codeowners": [
     "@Jocke1970"
   ],
   "config_flow": true,
+  "documentation": "https://github.com/Jocke1970/HA-SwedishPower",
   "integration_type": "service",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Jocke1970/HA-SwedishPower/issues",
   "requirements": [],
-  "categories": [
-    "energy.meters_monitoring"
-  ]
+  "version": "2026.11.0b1"
 }
