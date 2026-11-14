@@ -1,0 +1,93 @@
+{
+  "items": [
+    {
+      "messageId": 123456,
+      "version": 2,
+      "messageType": 1,
+      "eventStatus": 1,
+      "isOutdated": false,
+      "publicationDate": "2026-11-14T12:00:00Z",
+      "unavailabilityType": 1,
+      "unavailabilityReason": "Maintenance",
+      "reasonCode": 5,
+      "productionUnits": [
+        {
+          "name": "Forsmark Block3",
+          "areaName": "SE3",
+          "fuelType": 14,
+          "installedCapacity": 1172,
+          "timePeriods": [
+            {
+              "eventStart": "2026-11-14T11:00:00Z",
+              "eventStop": "2026-11-15T11:00:00Z",
+              "availableCapacity": 0,
+              "unavailableCapacity": 1172
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "messageId": 123457,
+      "version": 1,
+      "messageType": 1,
+      "isOutdated": false,
+      "productionUnits": [
+        {
+          "name": "Olkiluoto Block 3",
+          "areaName": "FI",
+          "fuelType": 14,
+          "timePeriods": [
+            {
+              "eventStart": "2026-11-14T11:00:00Z",
+              "eventStop": "2026-11-15T11:00:00Z",
+              "unavailableCapacity": 1600
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "messageId": 123458,
+      "version": 1,
+      "messageType": 1,
+      "isOutdated": true,
+      "productionUnits": [
+        {
+          "name": "Ringhals Block 3",
+          "areaName": "SE3",
+          "fuelType": 14,
+          "timePeriods": [
+            {
+              "eventStart": "2026-11-14T11:00:00Z",
+              "eventStop": null,
+              "unavailableCapacity": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "messageId": 123459,
+      "version": 1,
+      "messageType": 1,
+      "isOutdated": false,
+      "productionUnits": [
+        {
+          "name": "Oskarshamn Block 3",
+          "areaName": "SE3",
+          "fuelType": 14,
+          "timePeriods": [
+            {
+              "eventStart": "2026-11-20T11:00:00Z",
+              "eventStop": "2026-11-28T11:00:00Z",
+              "availableCapacity": 0,
+              "unavailableCapacity": 1400
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total": 4
+}
