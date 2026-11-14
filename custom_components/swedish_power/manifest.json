@@ -1,0 +1,14 @@
+{
+  "domain": "swedish_power",
+  "name": "Swedish Power",
+  "version": "2026.11.0b1",
+  "documentation": "https://github.com/Jocke1970/HA-SwedishPower",
+  "issue_tracker": "https://github.com/Jocke1970/HA-SwedishPower/issues",
+  "codeowners": [
+    "@Jocke1970"
+  ],
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": []
+}
