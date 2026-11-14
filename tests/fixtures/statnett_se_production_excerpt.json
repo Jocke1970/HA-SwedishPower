@@ -1,0 +1,15 @@
+{
+  "_notice": "Illustrative excerpt transcribed from a previously retrieved Statnett-derived third-party response; not a directly verified Statnett API fixture.",
+  "data": {
+    "MeasuredAt": 1794660300000,
+    "ProductionData": [{"countryCode": "SE", "value": "20 323", "measuredAt": null}],
+    "ConsumptionData": [{"countryCode": "SE", "value": "20 753", "measuredAt": "2026-11-14T12:30:00.0000000+00:00", "periodStart": "14.11.2026 13:30", "periodEnd": "14.11.2026 13:45"}],
+    "NetExchangeData": [{"countryCode": "SE", "value": "430", "measuredAt": null}],
+    "HydroData": [{"countryCode": "SE", "value": "10 109", "measuredAt": "2026-11-14T12:30:00.0000000+00:00"}],
+    "WindData": [{"countryCode": "SE", "value": "6 201", "measuredAt": "2026-11-14T12:30:00.0000000+00:00"}],
+    "NuclearData": [{"countryCode": "SE", "value": "2 503", "measuredAt": "2026-11-14T12:30:00.0000000+00:00"}],
+    "ThermalData": [{"countryCode": "SE", "value": "2", "measuredAt": "2026-11-14T12:30:00.0000000+00:00"}],
+    "NotSpecifiedData": [{"countryCode": "SE", "value": "1 509", "measuredAt": "2026-11-14T12:30:00.0000000+00:00"}]
+  },
+  "success": true
+}
