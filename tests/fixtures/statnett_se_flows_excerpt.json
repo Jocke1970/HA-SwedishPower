@@ -1,0 +1,11 @@
+{
+  "_notice": "Illustrative excerpt of a Statnett-derived flow response; direction/sign convention UNVERIFIED.",
+  "data": [
+    {"InAreaElspotId": "SE2", "OutAreaElspotId": "SE1", "Value": 2281.1069, "MeasureDate": 1794664249000},
+    {"InAreaElspotId": "SE3", "OutAreaElspotId": "SE2", "Value": 7383.7598, "MeasureDate": 1794664249000},
+    {"InAreaElspotId": "SE4", "OutAreaElspotId": "SE3", "Value": 1388.225, "MeasureDate": 1794664249000},
+    {"InAreaElspotId": "SE1", "OutAreaElspotId": "FI", "Value": -766.0917, "MeasureDate": 1794664249000},
+    {"InAreaElspotId": "DE", "OutAreaElspotId": "DK1", "Value": 379.1768, "MeasureDate": 1794664249000}
+  ],
+  "success": true
+}
