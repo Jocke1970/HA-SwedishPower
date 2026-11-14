@@ -1,0 +1,54 @@
+name: Sweden backend checks
+
+on:
+  push:
+    branches: [dev, beta, main]
+    paths:
+      - "custom_components/swedish_power/**"
+      - "tests/**"
+      - "tools/**"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "custom_components/swedish_power/**"
+      - "tests/**"
+      - "tools/**"
+      - ".github/workflows/backend-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Compile, unit tests and schema sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Python syntax and unit tests
+        run: |
+          python -m compileall -q custom_components tests tools
+          python -m unittest discover -s tests -v
+      - name: Validate translation and manifest JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("custom_components/swedish_power")
+          names = ["production", "consumption", "net_exchange", "hydro", "wind", "nuclear", "thermal", "other"]
+          manifest = json.loads((root / "manifest.json").read_text())
+          assert manifest["domain"] == "swedish_power"
+          assert manifest["config_flow"] is True
+          assert manifest["iot_class"] == "cloud_polling"
+          for file in ("strings.json", "translations/en.json", "translations/sv.json"):
+              data = json.loads((root / file).read_text(encoding="utf-8"))
+              assert set(data["entity"]["sensor"]) == set(names)
+              for name in names:
+                  assert data["entity"]["sensor"][name]["name"]
+          print("Manifest and translation files: PASS")
+          PY
