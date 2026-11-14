@@ -199,3 +199,81 @@ async def test_source_staleness_marks_mw_unavailable(hass, mocked_statnett):
     await hass.async_block_till_done()
     states = _sensor_states(hass, entry)
     assert all(state is not None and state.state == "unavailable" for state in states.values())
+
+
+async def test_failed_poll_recovers_on_next_success(hass, mocked_statnett):
+    """After a transient Statnett timeout, the same sensors recover."""
+    entry = await _setup_entry(hass)
+    coordinator = entry.runtime_data
+    original = coordinator._async_get_json
+
+    async def timeout(_path):
+        raise TimeoutError("temporary outage")
+
+    with patch.object(coordinator, "_async_get_json", timeout):
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+    assert not coordinator.last_update_success
+    assert _sensor_states(hass, entry)["swedish_power_se_production"].state == "unavailable"
+
+    with patch.object(coordinator, "_async_get_json", original):
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+    assert coordinator.last_update_success
+    assert float(_sensor_states(hass, entry)["swedish_power_se_production"].state) == 20323
+
+
+async def test_malformed_production_response_fails_safely(hass, mocked_statnett):
+    """A malformed successful HTTP response must not be displayed as data."""
+    entry = await _setup_entry(hass)
+    coordinator = entry.runtime_data
+    original = coordinator._async_get_json
+
+    async def malformed(path):
+        if path == PRODUCTION_PATH:
+            return {"ProductionData": "not-an-array"}
+        return await original(path)
+
+    with patch.object(coordinator, "_async_get_json", malformed):
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+    assert not coordinator.last_update_success
+    assert all(
+        state.state == "unavailable" for state in _sensor_states(hass, entry).values()
+    )
+
+
+async def test_diagnostics_do_not_include_raw_payload(hass, mocked_statnett):
+    """Export compact source status without exposing full API responses."""
+    from custom_components.swedish_power.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
+
+    entry = await _setup_entry(hass)
+    info = await async_get_config_entry_diagnostics(hass, entry)
+    assert info["scope"] == "SE"
+    assert info["poll_interval_seconds"] == 900
+    assert info["sweden_flow_count"] == 4
+    assert len(info["readings"]) == 8
+    assert info["readings"]["production"]["quality"] == "valid"
+    assert "ProductionData" not in json.dumps(info)
+
+
+async def test_first_refresh_failure_results_in_retry_state(hass, mocked_statnett):
+    """A startup source outage should request retry, never mark setup successful."""
+    from homeassistant.config_entries import ConfigEntryState
+
+    async def no_network(self, path):
+        raise TimeoutError("first refresh offline")
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Sweden",
+        data={},
+        unique_id="sweden",
+    )
+    entry.add_to_hass(hass)
+    with patch.object(SwedishPowerCoordinator, "_async_get_json", no_network):
+        result = await hass.config_entries.async_setup(entry.entry_id)
+    assert not result
+    assert entry.state == ConfigEntryState.SETUP_RETRY
