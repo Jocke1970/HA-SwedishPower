@@ -127,3 +127,49 @@ jobs:
           print("Cross-border Swedish flows:", sum(f["area_type"] == "cross_border" for f in obj["flows"]["flows"]))
           print("Direction:", obj["flows"]["sign_convention"])
           PY
+
+      - name: Validate current HA backend model against direct live JSON
+        shell: bash
+        run: |
+          python - <<'PY'
+          import asyncio
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import json
+          import sys
+          from types import ModuleType
+          from urllib.request import Request, urlopen
+
+          component = Path.cwd() / "custom_components" / "swedish_power"
+          stub = ModuleType("swedish_power")
+          stub.__path__ = [str(component)]
+          sys.modules["swedish_power"] = stub
+          from swedish_power.model import parse_production, parse_flows
+          from swedish_power.const import SOURCE_URL, PRODUCTION_PATH, FLOWS_PATH
+
+          def get(path):
+              req = Request(SOURCE_URL + path, headers={
+                  "Accept": "application/json",
+                  "User-Agent": "HA-SwedishPower-Research/0.1",
+              })
+              with urlopen(req, timeout=20) as response:
+                  assert response.status == 200, response.status
+                  return json.load(response)
+
+          # Live structure validation, not a Home Assistant runtime test.
+          now = datetime.now(timezone.utc)
+          snapshot = parse_production(get(PRODUCTION_PATH), now=now)
+          flows = parse_flows(get(FLOWS_PATH), now=now)
+          assert len(snapshot.readings) == 8
+          assert snapshot.readings["production"].value_mw is not None
+          assert snapshot.snapshot_at is not None
+          print("Live backend model: PASS")
+          print("Snapshot timestamp:", snapshot.snapshot_at.isoformat())
+          print("Metrics:",
+                {key: (val.value_mw, val.quality, val.timestamp_basis)
+                 for key, val in snapshot.readings.items()})
+          print("Accounting checks:", snapshot.checks)
+          print("Sweden-related raw flow records:", len(flows))
+          print("Internal Swedish flows:", sum(f.area_type == "internal" for f in flows))
+          print("Flow directions: UNVERIFIED")
+          PY
