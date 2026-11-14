@@ -1,0 +1,33 @@
+name: Marketplace and hassfest validation
+
+on:
+  push:
+    branches: [dev, beta, main]
+    paths:
+      - "custom_components/**"
+      - "hacs.json"
+      - "README.md"
+      - ".github/workflows/marketplace-validation.yml"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hacs:
+    name: HACS/Marketplace repository check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate HACS integration repository
+        uses: hacs/action@main
+        with:
+          category: integration
+          ignore: brands
+
+  hassfest:
+    name: Home Assistant hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
