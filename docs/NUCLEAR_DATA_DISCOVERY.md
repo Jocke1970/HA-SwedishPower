@@ -1,6 +1,6 @@
 # Swedish nuclear data — source discovery and adapter status
 
-> Research performed 2026-11-14 on the `dev` branch. **No reactor adapter is enabled in the installed `2026.11.0b1` beta.** Neither `beta` nor `main` has been changed.
+> Research performed 2026-11-14 on the `dev` branch. The installed **b1** release has only Statnett. The **b2 candidate** connects operator output sensors, pending gated release and user upgrade. `main` remains unchanged.
 
 ## Sources verified by direct GET from GitHub Actions
 
@@ -44,18 +44,18 @@ Our independent `custom_components/swedish_power/vattenfall.py` adapter uses a p
 
 ## Code and testing status
 
-- `vattenfall.py`, `okg.py`, `umm.py` and their offline tests are committed on **`dev` only**.
+- `vattenfall.py`, `okg.py`, `umm.py` and offline tests are on **`dev`**. For b2, `reactor_coordinator.py` adds three independent 15-minute source refreshers and `sensor.py` adds six MW sensors, while UMM remains research-only.
 - Fixtures are narrow **transcriptions/illustrations** of observed schemas, not archived full external payloads. The UMM fixture is **synthetic**.
 - All-source probe: `tools/nuclear_source_discovery.py`, runnable as a one-shot GitHub Actions job.
 - Baseline repository Python tests were 15; new tests cover Vattenfall precision/error handling, OKG timezone/DST, and conservative UMM matching.
-- **No sensor entities or scheduled polling of these additional sources are enabled yet.** The existing b1 Statnett integration and HA entities are unaffected.
+- **b2 candidate:** six new reactor MW sensors are enabled through three independently failing source coordinators; existing b1 Statnett sensor unique IDs remain unchanged. The released b1 is unaffected until a supervised in-place upgrade. **UMM is not polled in HA**.
 
-## Outstanding gates before a reactor-sensor beta
+## Outstanding gates for b2 field validation and future UMM status
 
 1. Verify operator source reuse terms and acceptable access frequency. Public reachability does not automatically imply unrestricted API rights.
 2. Test UMM paging across all relevant notices, cancellation/revision semantics, and filter correctness. Never sum overlapping UMM unavailable MW.
 3. Decide whether the actual operator-page `unit` and historical source timestamp behavior support a 90-minute stale threshold for each independent reactor feed.
-4. Wire independent, failure-isolated source coordinators into HA; add six stable-ID MW entities and separate **evidence-based** notice/status attributes only after UMM semantics tests.
+4. **Implemented on dev for b2:** three independent reactor coordinators and six MW entities, without derived status. Complete supervised HA/Recorder field observations before promoting further. Evidence-based UMM status remains a separate future feature.
 5. Validate on a real HA Core test runtime and with current operator data; release through **dev → beta → main**. Never install `dev` directly.
 
 ## Credits and prior art
