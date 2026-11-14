@@ -55,7 +55,7 @@ class SwedishPowerCoordinator(DataUpdateCoordinator[SwedishPowerData]):
         async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
             async with self._session.get(
                 url,
-                headers={"Accept": "application/json", "User-Agent": "HA-SwedishPower/2026.11.0b1"},
+                headers={"Accept": "application/json", "User-Agent": "HA-SwedishPower/2026.11.0b2"},
             ) as response:
                 response.raise_for_status()
                 if "json" not in response.content_type.lower():
