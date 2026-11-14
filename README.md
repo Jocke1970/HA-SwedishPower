@@ -38,6 +38,10 @@ For supervised testing, download **Source code (zip)** from the [published 2026.
 - [Proposed architecture and safety rules](docs/ARCHITECTURE.md)
 - [Data-source validation register](docs/DATA_SOURCES.md)
 
+## Nuclear source research (dev only)
+
+Vattenfall F1–F3 / R3–R4 and OKG O3 output were verified directly from official sites. A limited public Nord Pool UMM response was successfully normalized for all six Swedish reactors. Pure Python data adapters and **41 passing offline tests** now exist on `dev`, but the reactor entities are **not yet part of the released integration**. See [source schema and caveats](docs/NUCLEAR_DATA_DISCOVERY.md). The running `2026.11.0b1` beta still contains only the eight original Statnett sensors.
+
 ## Development approach
 
 1. `dev` — implementation and discovery;
